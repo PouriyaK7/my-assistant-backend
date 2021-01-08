@@ -20,7 +20,7 @@ class TaskManagerController extends Controller
         return 0;
     }
 
-    protected function checkAccessibility() {
+    protected function checkAccessibility($id) {
         return TaskGroupUser::where('task_group', '=', $id)
             ->where('user', '=', \Auth::id())
             ->count();
@@ -56,7 +56,7 @@ class TaskManagerController extends Controller
 
     public function editTaskGroup(Request $request, int $id) {
         if (!$this->isBan()) {
-            if ($this->checkAccessibility() != 1)
+            if ($this->checkAccessibility($id) != 1)
                 return json_encode(['status' => 'ERROR', 'error' => 'User does\'nt have access to this task group']);
             $inputs = $request->except('_token');
 
@@ -175,7 +175,7 @@ class TaskManagerController extends Controller
 
             if (isset($inputs['group'])) {
                 $taskGroup = new TaskGroup($inputs['group']);
-                if ($this->checkAccessibility() != 1)
+                if ($this->checkAccessibility($inputs['group']) != 1)
                     return json_encode(['status' => 'ERROR', 'error' => 'User does\'nt have access to add task in this task group']);
             }
 
@@ -197,6 +197,76 @@ class TaskManagerController extends Controller
             ]);
 
             return json_encode(['status' => 'OK', 'result' => 'Task created']);
+        }
+
+        return json_encode($this->banMessage);
+    }
+
+    public function editTask(Request $request, int $id) {
+        if (!$this->isBan()) {
+            $inputs = $request->except('_token');
+
+            if (isset($inputs['group'])) {
+                $taskGroup = new TaskGroup($inputs['group']);
+
+                if ($this->checkAccessibility($inputs['group']))
+                    return json_encode(['status' => 'ERROR', 'error' => 'User does\'nt have access to edit task in this task group']);
+            }
+
+            $task = new Task($id);
+
+            Task::where('id', '=', $id)
+                ->update([
+                    'title' => $inputs['title'],
+                    'priority' => $inputs['priority'] ?? $task->priority,
+                    'date' => $inputs['date'] ?? $task->date,
+                    'description' => $inputs['description'] ?? $task->description,
+                    'is_subtask' => $inputs['subtask'] ?? $task->is_subtask,
+                    'group' => $taskGroup->id ?? $task->group
+                ]);
+
+            Log::create([
+                'section' => $id,
+                'type' => 1,
+                'user' => \Auth::id(),
+                'text' => '<a href="' . \Auth::id() . '">' . \Auth::user()->username . '</a> edited a task' . (isset($taskGroup)? ' in ' . $taskGroup->title . ' task group': '')
+            ]);
+
+            return json_encode(['status' => 'OK', 'result' => 'Task edited successfully']);
+        }
+
+        return json_encode($this->banMessage);
+    }
+
+    public function deleteTask($id) {
+        if (!$this->isBan()) {
+            $task = new Task($id);
+
+            if (!is_null($task->group)) {
+                $checkAccessibility = TaskGroupUser::where('user', '=', \Auth::id())
+                    ->where('task_group', '=', $task->group)
+                    ->count();
+                $taskGroup = new TaskGroup($task->group);
+                if ($checkAccessibility == 1)
+                    Task::where('id', '=', $id)
+                        ->delete();
+                else
+                    return json_encode(['status' => 'ERROR', 'error' => 'User does\'nt have access to delete task in this task group']);
+            }
+            elseif ($task->user == \Auth::id())
+                Task::where('id', '=', $id)
+                    ->delete();
+            else
+                return json_encode(['status' => 'ERROR', 'error' => 'User does\'nt have access to delete task in this task group']);
+
+            Log::create([
+                'section' => 0,
+                'type' => 1,
+                'user' => \Auth::id(),
+                'text' => '<a href="' . \Auth::id() . '">' . \Auth::user()->username . '</a> deleted a task' . (isset($checkAccessibility)? ' in ' . $taskGroup->title . ' task group': '')
+            ]);
+
+            return json_encode(['status' => 'OK', 'result' => 'task deleted successfully']);
         }
 
         return json_encode($this->banMessage);

@@ -16,6 +16,7 @@ class CreateLogs extends Migration
         Schema::create('logs', function (Blueprint $table) {
             $table->id();
             $table->integer('section');
+            // 1 is for tasks, 2 is for transactions
             $table->integer('type');
             $table->bigInteger('user');
             $table->text('text');

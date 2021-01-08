@@ -15,6 +15,7 @@ class CreateTransactions extends Migration
     {
         Schema::create('transactions', function (Blueprint $table) {
             $table->id();
+            // 0 is income and 1 is outcome
             $table->integer('type');
             $table->string('description');
             $table->integer('category');
