@@ -16,6 +16,7 @@ class CreatePostComments extends Migration
         Schema::create('post_comments', function (Blueprint $table) {
             $table->bigInteger('user');
             $table->bigInteger('post');
+            // 0 is dislike and 1 is like
             $table->integer('type');
             $table->timestamps();
             $table->primary(['user', 'post']);
