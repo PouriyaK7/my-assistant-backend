@@ -18,10 +18,11 @@ class CreateUserJobHistory extends Migration
             $table->string('title');
             $table->text('roles');
             $table->string('start_year');
-            $table->string('end_year');
-            $table->string('start_month');
-            $table->string('end_month');
+            $table->string('end_year')->nullable();
+            $table->string('start_month')->nullable();
+            $table->string('end_month')->nullable();
             $table->text('awards');
+            $table->bigInteger('user');
             $table->timestamps();
         });
     }
