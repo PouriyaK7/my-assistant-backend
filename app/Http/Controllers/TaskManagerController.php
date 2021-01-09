@@ -33,7 +33,7 @@ class TaskManagerController extends Controller
                 'title' => $inputs['title'],
                 'owner' => \Auth::id(),
                 'description' => $inputs['description'] ?? null,
-                'slug' => $inputs['title'] . '-' . \Auth::id(),
+                'slug' => $inputs['slug'] ?? $inputs['title'] . '-' . \Auth::id(),
             ]);
 
             foreach ($inputs['users'] as $user)
@@ -76,6 +76,14 @@ class TaskManagerController extends Controller
                     'type' => 1,
                     'user' => \Auth::id(),
                     'text' => '<a href="/' . \Auth::id() . '">' . \Auth::user()->username . '</a> Task group description changed from ' . $taskGroup->description . ' to ' . ($inputs['description'] ?? 'null')
+                ]);
+
+            if ($taskGroup->slug != $inputs['slug'])
+                Log::create([
+                    'section' => $taskGroup->id,
+                    'type' => 1,
+                    'user' => \Auth::id(),
+                    'text' => '<a href="/' . \Auth::id() . '">' . \Auth::user()->username . '</a> Task group slug changed from ' . $taskGroup->description . ' to ' . ($inputs['description'] ?? 'null')
                 ]);
 
             TaskGroup::where('id', '=', $id)
