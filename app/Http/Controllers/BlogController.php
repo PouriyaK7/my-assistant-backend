@@ -21,11 +21,18 @@ class BlogController extends Controller
         if (!$this->isBan()) {
             $inputs = $request->except('_token');
 
-            Post::create([
+            $post = Post::create([
                 'title' => $inputs['title'],
                 'text' => $inputs['text'],
                 'user' => \Auth::id(),
                 'slug' => $inputs['slug']
+            ]);
+
+            Log::create([
+                'section' => $post->id,
+                'type' => 4,
+                'user' => \Auth::id(),
+                'text' => '<a href="' . \Auth::id() . '">' . \Auth::user()->username . '</a> created a post'
             ]);
 
             return json_encode(['status' => 'OK', 'result' => 'Post added successfully']);
@@ -47,6 +54,13 @@ class BlogController extends Controller
                     'slug' => $inputs['slug']
                 ]);
 
+            Log::create([
+                'section' => $id,
+                'type' => 4,
+                'user' => \Auth::id(),
+                'text' => '<a href="' . \Auth::id() . '">' . \Auth::user()->username . '</a> edited a post'
+            ]);
+
             return json_encode(['status' => 'OK', 'result' => 'Post edited successfully']);
         }
 
@@ -58,6 +72,13 @@ class BlogController extends Controller
             Post::where('id', '=', $id)
                 ->where('user', '=', \Auth::id())
                 ->delete();
+
+            Log::create([
+                'section' => 0,
+                'type' => 4,
+                'user' => \Auth::id(),
+                'text' => '<a href="' . \Auth::id() . '">' . \Auth::user()->username . '</a> deleted a post'
+            ]);
 
             return json_encode(['status' => 'OK', 'result' => 'Post deleted successfully']);
         }
@@ -93,6 +114,13 @@ class BlogController extends Controller
                 'type' => $type,
             ]);
 
+            Log::create([
+                'section' => $post,
+                'type' => 4,
+                'user' => \Auth::id(),
+                'text' => '<a href="' . \Auth::id() . '">' . \Auth::user()->username . '</a> ' . ($type? 'liked': 'disliked') . ' a post'
+            ]);
+
             return json_encode(['status' => 'OK', 'result' => 'Comment added successfully']);
         }
 
@@ -120,6 +148,13 @@ class BlogController extends Controller
             PostComment::where('post', '=', $post->id)
                 ->where('user', '=', \Auth::id())
                 ->delete();
+
+            Log::create([
+                'section' => $post->id,
+                'type' => 4,
+                'user' => \Auth::id(),
+                'text' => '<a href="' . \Auth::id() . '">' . \Auth::user()->username . '</a> removed a comment'
+            ]);
 
             return json_encode(['status' => 'OK', 'result' => 'Comment deleted successfully']);
         }

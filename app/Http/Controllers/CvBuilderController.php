@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Log;
 use App\Models\Skill;
 use App\Models\User;
 use App\Models\UserEducation;
@@ -76,6 +77,13 @@ class CvBuilderController extends Controller
                     'office_number' => $inputs['office_number'] ?? \Auth::user()->office_number ?? null,
                 ]);
 
+            Log::create([
+                'section' => 0,
+                'type' => 3,
+                'user' => \Auth::id(),
+                'text' => '<a href="' . \Auth::id() . '">' . \Auth::user()->username . '</a> updated their CV'
+            ]);
+
             return json_encode(['status' => 'OK', 'result' => 'User credentials updated successfully']);
         }
 
@@ -96,6 +104,13 @@ class CvBuilderController extends Controller
                     'user' => \Auth::id(),
                     'term' => $inputs['term'] ?? null
                 ]);
+
+            Log::create([
+                'section' => $education->id,
+                'type' => 3,
+                'user' => \Auth::id(),
+                'text' => '<a href="' . \Auth::id() . '">' . \Auth::user()->username . '</a> Added education to their CV'
+            ]);
 
             return json_encode(['status' => 'OK', 'result' => 'User education added successfully']);
         }
@@ -123,6 +138,13 @@ class CvBuilderController extends Controller
                     'term' => $inputs['term'] ?? $education->term ?? null
                 ]);
 
+            Log::create([
+                'section' => $id,
+                'type' => 3,
+                'user' => \Auth::id(),
+                'text' => '<a href="' . \Auth::id() . '">' . \Auth::user()->username . '</a> edited one of their educations in CV'
+            ]);
+
             return json_encode(['status' => 'OK', 'result' => 'User education updated successfully']);
         }
 
@@ -134,6 +156,13 @@ class CvBuilderController extends Controller
             UserEducation::where('id', '=', $id)
                 ->where('user', '=', \Auth::id())
                 ->delete();
+
+            Log::create([
+                'section' => 0,
+                'type' => 3,
+                'user' => \Auth::id(),
+                'text' => '<a href="' . \Auth::id() . '">' . \Auth::user()->username . '</a> deleted one of their education CV'
+            ]);
 
             return json_encode(['status' => 'OK', 'result' => 'User education deleted successfully']);
         }
@@ -153,6 +182,13 @@ class CvBuilderController extends Controller
                 'skill' => $skill['id']
             ]);
 
+            Log::create([
+                'section' => 0,
+                'type' => 3,
+                'user' => \Auth::id(),
+                'text' => '<a href="' . \Auth::id() . '">' . \Auth::user()->username . '</a> Added skill to their CV'
+            ]);
+
             return json_encode(['status' => 'OK', 'result' => 'User skill added successfully']);
         }
 
@@ -165,6 +201,13 @@ class CvBuilderController extends Controller
                 ->where('skill', '=', $skill)
                 ->delete();
 
+            Log::create([
+                'section' => 0,
+                'type' => 3,
+                'user' => \Auth::id(),
+                'text' => '<a href="' . \Auth::id() . '">' . \Auth::user()->username . '</a> deleted skill from their CV'
+            ]);
+
             return json_encode(['status' => 'OK', 'result' => 'User skill deleted successfully']);
         }
 
@@ -175,7 +218,7 @@ class CvBuilderController extends Controller
         if (!$this->isBan()) {
             $inputs = $request->except('_token');
 
-            UserJobHistory::create([
+            $jobHistory = UserJobHistory::create([
                 'title' => $inputs['title'],
                 'roles' => $inputs['roles'],
                 'start_year' => $inputs['start_year'],
@@ -184,6 +227,13 @@ class CvBuilderController extends Controller
                 'end_month' => $inputs['end_month'] ?? null,
                 'awards' => $inputs['awards'],
                 'user' => \Auth::id()
+            ]);
+
+            Log::create([
+                'section' => $jobHistory->id,
+                'type' => 3,
+                'user' => \Auth::id(),
+                'text' => '<a href="' . \Auth::id() . '">' . \Auth::user()->username . '</a> Added job history to their CV'
             ]);
 
             return json_encode(['status' => 'OK', 'result' => 'User job history added successfully']);
@@ -212,6 +262,13 @@ class CvBuilderController extends Controller
                     'awards' => $inputs['awards']
                 ]);
 
+            Log::create([
+                'section' => $id,
+                'type' => 3,
+                'user' => \Auth::id(),
+                'text' => '<a href="' . \Auth::id() . '">' . \Auth::user()->username . '</a> edited job history in their CV'
+            ]);
+
             return json_encode(['status' => 'OK', 'result' => 'User job history edited successfully']);
         }
 
@@ -223,6 +280,13 @@ class CvBuilderController extends Controller
             UserJobHistory::where('id', '=', $id)
                 ->where('user', '=', \Auth::id())
                 ->delete();
+
+            Log::create([
+                'section' => 0,
+                'type' => 3,
+                'user' => \Auth::id(),
+                'text' => '<a href="' . \Auth::id() . '">' . \Auth::user()->username . '</a> deleted job history from their CV'
+            ]);
 
             return json_encode(['status' => 'OK', 'result' => 'User job history deleted successfully']);
         }

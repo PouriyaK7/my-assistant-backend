@@ -29,11 +29,18 @@ class NoteController extends Controller
         if (!$this->isBan()) {
             $inputs = $request->except('_token');
 
-            Note::create([
+            $note = Note::create([
                 'subject' => $inputs['subject'],
                 'text' => $inputs['text'],
                 'owner' => \Auth::id(),
                 'slug' => $inputs['slug']
+            ]);
+
+            Log::create([
+                'section' => $note->id,
+                'type' => 5,
+                'user' => \Auth::id(),
+                'text' => '<a href="' . \Auth::id() . '">' . \Auth::user()->username . '</a> created a note'
             ]);
 
             return json_encode(['status' => 'OK', 'result' => 'Note created successfully']);
@@ -56,6 +63,13 @@ class NoteController extends Controller
                     'slug' => $inputs['slug']
                 ]);
 
+            Log::create([
+                'section' => $id,
+                'type' => 5,
+                'user' => \Auth::id(),
+                'text' => '<a href="' . \Auth::id() . '">' . \Auth::user()->username . '</a> edited a note'
+            ]);
+
             return json_encode(['status' => 'OK', 'result' => 'Note edited successfully']);
         }
 
@@ -67,6 +81,13 @@ class NoteController extends Controller
             Note::where('id', '=', $id)
                 ->where('owner', '=', \Auth::id())
                 ->delete();
+
+            Log::create([
+                'section' => 0,
+                'type' => 5,
+                'user' => \Auth::id(),
+                'text' => '<a href="' . \Auth::id() . '">' . \Auth::user()->username . '</a> deleted a note'
+            ]);
 
             return json_encode(['status' => 'OK', 'result' => 'Note deleted successfully']);
         }
@@ -84,6 +105,13 @@ class NoteController extends Controller
                 'permission' => $permission
             ]);
 
+            Log::create([
+                'section' => $note,
+                'type' => 5,
+                'user' => \Auth::id(),
+                'text' => '<a href="' . \Auth::id() . '">' . \Auth::user()->username . '</a> added a participator to a note'
+            ]);
+
             return json_encode(['status' => 'OK', 'result' => 'Participator added successfully']);
         }
 
@@ -95,6 +123,13 @@ class NoteController extends Controller
             NoteParticipator::where('note', '=', $note)
                 ->where('user', '=', $user)
                 ->delete();
+
+            Log::create([
+                'section' => 0,
+                'type' => 5,
+                'user' => \Auth::id(),
+                'text' => '<a href="' . \Auth::id() . '">' . \Auth::user()->username . '</a> removed a participator to a note'
+            ]);
 
             return json_encode(['status' => 'OK', 'result' => 'Participator deleted successfully']);
         }
