@@ -62,6 +62,18 @@ class NoteController extends Controller
         return json_encode($this->banMessage);
     }
 
+    public function deleteNote($id) {
+        if (!$this->isBan()) {
+            Note::where('id', '=', $id)
+                ->where('owner', '=', \Auth::id())
+                ->delete();
+
+            return json_encode(['status' => 'OK', 'result' => 'Note deleted successfully']);
+        }
+
+        return json_encode($this->banMessage);
+    }
+
     public function addParticipator($note, $user, $permission) {
         if (!$this->isBan()) {
             $this->deleteParticipator($note, $user);
