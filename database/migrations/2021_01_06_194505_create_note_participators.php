@@ -16,6 +16,7 @@ class CreateNoteParticipators extends Migration
         Schema::create('note_participators', function (Blueprint $table) {
             $table->bigInteger('user');
             $table->bigInteger('note');
+            // 1 => read only, 2 => write
             $table->integer('permission');
             $table->primary(['user', 'note']);
             $table->timestamps();
